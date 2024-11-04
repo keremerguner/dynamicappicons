@@ -22,5 +22,29 @@
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
       </activity>
+        <activity-alias
+                android:name="com.dynamicappicon.MainActivitylogo1"
+                android:enabled="true"
+                android:exported="true"
+                android:icon="@mipmap/logo1"
+                android:roundIcon="@mipmap/logo1_round"
+                android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+                android:name="com.dynamicappicon.MainActivitylogo2"
+                android:enabled="false"
+                android:exported="true"
+                android:icon="@mipmap/logo2"
+                android:roundIcon="@mipmap/logo2_round"
+                android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity-alias>
     </application>
 </manifest>
