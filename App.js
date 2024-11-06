@@ -8,22 +8,64 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  ScrollView,
+  Image,
+  Dimensions,
 } from 'react-native';
 import {changeIcon, getIcon, resetIcon} from 'react-native-change-icon';
 import RNRestart from 'react-native-restart';
 
-// Mock kullanıcı verileri
+const {width} = Dimensions.get('window');
+
+// Header komponenti
+const Header = ({companyName, companyLogo, onLogout}) => {
+  return (
+    <View style={styles.header}>
+      <View style={styles.headerLeft}>
+        <Image
+          source={companyLogo}
+          style={styles.companyLogo}
+          resizeMode="contain"
+        />
+        <Text style={styles.headerText}>{companyName}</Text>
+      </View>
+      <TouchableOpacity onPress={onLogout} style={styles.logoutButton}>
+        <Text style={styles.logoutButtonText}>Çıkış</Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+// Bilgi kartı komponenti
+const InfoCard = ({title, value}) => {
+  return (
+    <View style={styles.card}>
+      <Text style={styles.cardTitle}>{title}</Text>
+      <Text style={styles.cardValue}>{value}</Text>
+    </View>
+  );
+};
+
+// Mock kullanıcı verileri güncellendi
 const mockUsers = [
   {
-    username: "user1",
-    password: "pass1",
-    appIcon: "logo1"
+    username: 'Bestera@bestera.com',
+    password: '123',
+    appIcon: 'logo1',
+    companyName: 'BestERA Company',
+    companyLogo: require('../dynamicappicon/src/assets/images/bestera.png'),
+    role: 'Yönetici',
+    lastLogin: '06.11.2024 09:30',
   },
   {
-    username: "user2",
-    password: "pass2",
-    appIcon: "logo2"
-  }
+    username: 'Tav@tav.com',
+    password: '123',
+    appIcon: 'logo2',
+    companyName: 'Tav Company',
+    companyLogo: require('../dynamicappicon/src/assets/images/tav.png'), 
+    role: 'Kullanıcı',
+    lastLogin: '06.11.2024 10:15',
+  },
 ];
 
 const App = () => {
@@ -43,7 +85,7 @@ const App = () => {
 
   const handleLogin = () => {
     const user = mockUsers.find(
-      user => user.username === username && user.password === password
+      user => user.username === username && user.password === password,
     );
 
     if (user) {
@@ -55,7 +97,14 @@ const App = () => {
     }
   };
 
-  const changeAppIcon = async (iconName) => {
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setUsername('');
+    setPassword('');
+    setCurrentUser(null);
+  };
+
+  const changeAppIcon = async iconName => {
     try {
       if (iconName === 'logo1' && Platform.OS === 'ios') {
         await resetIcon();
@@ -78,12 +127,18 @@ const App = () => {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loginContainer}>
-          <Text style={styles.title}>Giriş Yap</Text>
+          <View style={styles.loginHeader}>
+            <Text style={styles.loginTitle}>Hoş Geldiniz</Text>
+            <Text style={styles.loginSubtitle}>
+              Devam etmek için giriş yapın
+            </Text>
+          </View>
           <TextInput
             style={styles.input}
             placeholder="Kullanıcı Adı"
             value={username}
             onChangeText={setUsername}
+            placeholderTextColor="#666"
           />
           <TextInput
             style={styles.input}
@@ -91,10 +146,9 @@ const App = () => {
             value={password}
             onChangeText={setPassword}
             secureTextEntry
+            placeholderTextColor="#666"
           />
-          <TouchableOpacity
-            style={styles.button}
-            onPress={handleLogin}>
+          <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
             <Text style={styles.buttonLabel}>Giriş Yap</Text>
           </TouchableOpacity>
         </View>
@@ -105,18 +159,38 @@ const App = () => {
   // Ana ekran
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Hoş geldin, {currentUser?.username}</Text>
-      <Text style={styles.subtitle}>Aktif ikon: {currentAppIcon}</Text>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => {
-          setIsLoggedIn(false);
-          setUsername('');
-          setPassword('');
-          setCurrentUser(null);
-        }}>
-        <Text style={styles.buttonLabel}>Çıkış Yap</Text>
-      </TouchableOpacity>
+      <Header
+        companyName={currentUser?.companyName}
+        companyLogo={currentUser?.companyLogo}
+        onLogout={handleLogout}
+      />
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.welcomeSection}>
+          <Text style={styles.welcomeText}>Hoş geldiniz,</Text>
+          <Text style={styles.usernameText}>{currentUser?.username}</Text>
+        </View>
+
+        <View style={styles.cardsContainer}>
+          <InfoCard title="Kullanıcı Rolü" value={currentUser?.role} />
+          <InfoCard title="Son Giriş" value={currentUser?.lastLogin} />
+          <InfoCard title="Aktif İkon" value={currentAppIcon} />
+        </View>
+
+        <View style={styles.quickActions}>
+          <Text style={styles.sectionTitle}>Hızlı İşlemler</Text>
+          <View style={styles.actionButtonsContainer}>
+            <TouchableOpacity style={styles.actionButton}>
+              <Text style={styles.actionButtonText}>Profil</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionButton}>
+              <Text style={styles.actionButtonText}>Ayarlar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionButton}>
+              <Text style={styles.actionButtonText}>Bildirimler</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -124,39 +198,163 @@ const App = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    width: '100%',
+    backgroundColor: '#F5F6FA',
   },
+  header: {
+    backgroundColor: '#A78FD7',
+    padding: 15,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  companyLogo: {
+    width: 30,
+    height: 30,
+    marginRight: 10,
+    borderRadius: 15,
+  },
+  headerText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  logoutButton: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  logoutButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  content: {
+    flex: 1,
+  },
+  welcomeSection: {
+    padding: 20,
+    backgroundColor: '#fff',
+    marginVertical: 10,
+    marginHorizontal: 15,
+    borderRadius: 12,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  welcomeText: {
+    fontSize: 16,
+    color: '#666',
+  },
+  usernameText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+    marginTop: 4,
+  },
+  cardsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    padding: 10,
+    justifyContent: 'space-between',
+  },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 15,
+    marginBottom: 10,
+    width: width / 2 - 20,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  cardTitle: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 8,
+  },
+  cardValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  quickActions: {
+    padding: 15,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 15,
+  },
+  actionButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  actionButton: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 15,
+    width: width / 3 - 20,
+    alignItems: 'center',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  actionButtonText: {
+    color: '#A78FD7',
+    fontWeight: '600',
+  },
+  // Login screen styles
   loginContainer: {
     flex: 1,
     padding: 20,
     justifyContent: 'center',
+    backgroundColor: '#fff',
   },
-  title: {
-    fontSize: 24,
+  loginHeader: {
+    marginBottom: 30,
+    alignItems: 'center',
+  },
+  loginTitle: {
+    fontSize: 28,
     fontWeight: 'bold',
-    marginVertical: 12,
-    marginHorizontal: 12,
+    color: '#333',
+    marginBottom: 8,
   },
-  subtitle: {
+  loginSubtitle: {
     fontSize: 16,
-    marginHorizontal: 12,
-    marginBottom: 20,
+    color: '#666',
   },
   input: {
     height: 50,
-    borderWidth: 1,
-    borderColor: '#A78FD7',
-    borderRadius: 6,
-    paddingHorizontal: 10,
+    backgroundColor: '#F5F6FA',
+    borderRadius: 12,
+    paddingHorizontal: 15,
     marginBottom: 15,
+    fontSize: 16,
+    color: '#333',
   },
-  button: {
-    alignItems: 'center',
-    justifyContent: 'center',
+  loginButton: {
     backgroundColor: '#A78FD7',
-    paddingVertical: 12,
-    width: '100%',
-    borderRadius: 6,
+    paddingVertical: 15,
+    borderRadius: 12,
+    alignItems: 'center',
     marginTop: 10,
   },
   buttonLabel: {
